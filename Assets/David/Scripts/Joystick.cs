@@ -14,6 +14,8 @@ public class Joystick : MonoBehaviour
 
     public bool IsShowing { get; private set; }
 
+    [SerializeField] private LineRenderer m_LineRend;
+
     public void Init(float scaleInner, float scaleOuter)
     {
         m_InnerTr.localScale = Vector3.one * scaleInner;
@@ -39,6 +41,8 @@ public class Joystick : MonoBehaviour
                 Vector3 dir = (followPos - posOnShow).normalized;
                 m_InnerTr.position = posOnShow + dir * maxDistFromCenter;
             }
+
+            m_LineRend.SetPosition(1, m_InnerTr.position);
         }
     }
 
@@ -48,12 +52,35 @@ public class Joystick : MonoBehaviour
         posOnShow = followTr.position;
         this.transform.position = _followTr.position;
 
+        //line
+        m_LineRend.positionCount = 2;
+        m_LineRend.SetPosition(0, posOnShow);
+        m_LineRend.SetPosition(1, posOnShow);
+        
         this.gameObject.SetActive(true);
         IsShowing = true;
     }
 
     public void Hide()
     {
-        this.gameObject.SetActive(false);   
+        m_LineRend.positionCount = 0;
+        this.gameObject.SetActive(false);
+        IsShowing = false;
+    }
+
+    public Vector3 GetDirection()
+    {
+        if (!IsShowing) return Vector3.zero;
+
+        return (m_InnerTr.position - posOnShow).normalized;
+    }
+
+    public float GetMagnitude()
+    {
+        if (!IsShowing) return 0f;
+
+        float mag = (m_InnerTr.position - posOnShow).magnitude;
+
+        return Mathf.Clamp01(mag / maxDistFromCenter);
     }
 }

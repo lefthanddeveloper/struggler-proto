@@ -11,7 +11,8 @@ public class JoystickController : MonoBehaviour
     [SerializeField] private Joystick m_Joystick;
     [SerializeField] private float m_RadiusOuter = 0.3f;
     [SerializeField] private float m_RadiusInner = 0.05f;
-    
+
+    public Joystick Joystick => m_Joystick;
     void Start()
     {
         m_HandInput.onPinch_L += OnPinch_L;
@@ -33,8 +34,12 @@ public class JoystickController : MonoBehaviour
         if(skeleton.IsValidBone(OVRSkeleton.BoneId.Hand_IndexTip))
         {
             int indexFingerBoneID = (int)OVRSkeleton.BoneId.Hand_IndexTip;
-            Transform indexTr = hand.GetComponent<OVRSkeleton>().Bones[indexFingerBoneID].Transform;
-            m_Joystick.Show(indexTr);
+            
+            if(skeleton.Bones.Count > indexFingerBoneID)
+            {
+                Transform indexTr = skeleton.Bones[indexFingerBoneID].Transform;
+                m_Joystick.Show(indexTr);
+            }
         }
     }
 

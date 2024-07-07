@@ -5,6 +5,7 @@
     "com.meta.xr.sdk.interaction.ovr": "66.0.0",
     "com.meta.xr.sdk.sharedassets": "66.0.0",
     "com.meta.xr.simulator": "66.0.1",
+    "com.unity.2d.sprite": "1.0.0",
     "com.unity.collab-proxy": "2.3.1",
     "com.unity.feature.development": "1.0.1",
     "com.unity.textmeshpro": "3.0.6",
