@@ -1,4 +1,5 @@
 using Oculus.Interaction;
+using Oculus.Interaction.PoseDetection.Debug.Editor.Generated;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -13,6 +14,14 @@ public class Struggler : MonoBehaviour
     private Animator animator;
 
     private const string Param_MoveSpeed = "MoveSpeed";
+    private const string Param_AttackA = "AttackA";
+    
+    
+    //attack
+    private float attackCoolTime = 1.0f;
+    private bool isAttacking = false;
+    private Coroutine attackCor = null;
+    private Coroutine smoothLayerCor = null;
 
     [SerializeField] private float m_ForceMultiplier = 1.0f;
 
@@ -21,11 +30,41 @@ public class Struggler : MonoBehaviour
 
     void Start()
     {
-        joystick = FindObjectOfType<JoystickController>().Joystick;
+        var joystickController = FindObjectOfType<JoystickController>();
+        joystick = joystickController.Joystick;
+
+        joystickController.onInputAttack_A += OnInputAttack_A;
+
+
         rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();
 
         StrugglerRetriever.onRetrieveCalled += OnRetrieveCalled;
+    }
+
+    private void OnInputAttack_A()
+    {
+        if (isAttacking) return;
+
+        attackCor = StartCoroutine(AttackCor());
+    }
+
+    private IEnumerator AttackCor()
+    {
+        isAttacking = true;
+        
+       SetUpperbodyLayerWeight(1.0f);
+        animator.SetTrigger(Param_AttackA);
+
+        float timePassed = 0f;
+        while(timePassed < attackCoolTime) 
+        {
+            timePassed += Time.deltaTime;
+            yield return null;
+        }
+
+       SetUpperbodyLayerWeight(0f, true);
+        isAttacking = false;
     }
 
     private void OnRetrieveCalled()
@@ -81,6 +120,42 @@ public class Struggler : MonoBehaviour
     {
         rb.position = pos;
         rb.rotation = rot;
+    }
+
+    private void SetUpperbodyLayerWeight(float _weight, bool smooth = false)
+    {
+        if (smoothLayerCor != null)
+        {
+            StopCoroutine(smoothLayerCor);
+        }
+
+        if (!smooth)
+        {
+            animator.SetLayerWeight(1, _weight);
+        }
+        else
+        {
+            float curWeight = animator.GetLayerWeight(1);
+            smoothLayerCor = StartCoroutine(LayerSmooth(curWeight, _weight));
+        }
+    }
+
+    private IEnumerator LayerSmooth(float curWeight, float targetWeight)
+    {
+        float timePassed = 0f;
+        float ratio = 0f;
+        float smoothTime = 0.5f;
+
+        while(ratio < 1f)
+        {
+            timePassed += Time.deltaTime;
+            ratio = timePassed / smoothTime;
+            float weight = Mathf.Lerp(curWeight, targetWeight, ratio);
+            SetUpperbodyLayerWeight(weight, false);
+            yield return null;
+        }
+        SetUpperbodyLayerWeight(targetWeight, false);
+        smoothLayerCor = null;
     }
    
 }

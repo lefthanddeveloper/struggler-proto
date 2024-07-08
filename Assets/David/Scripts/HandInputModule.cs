@@ -34,7 +34,34 @@ public class HandInputModule : MonoBehaviour
             }
         }
     }
-    
+
+
+    public Action<OVRHand> onPinch_R;
+    public Action<OVRHand> onRelease_R;
+
+    private bool _isPinching_R;
+    public bool IsPinching_R
+    {
+        get
+        {
+            return _isPinching_R;
+        }
+        private set
+        {
+            if (_isPinching_R != value)
+            {
+                _isPinching_R = value;
+                if (_isPinching_R)
+                {
+                    onPinch_R?.Invoke(m_OvrHand_R);
+                }
+                else
+                {
+                    onRelease_R?.Invoke(m_OvrHand_R);
+                }
+            }
+        }
+    }
     void Start()
     {
         
@@ -50,5 +77,15 @@ public class HandInputModule : MonoBehaviour
         {
             IsPinching_L = false;
         }
+
+        if (m_OvrHand_R.IsTracked)
+        {
+            IsPinching_R = m_OvrHand_R.GetFingerIsPinching(OVRHand.HandFinger.Index);
+        }
+        else
+        {
+            IsPinching_R = false;
+        }
+
     }
 }

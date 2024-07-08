@@ -12,13 +12,26 @@ public class JoystickController : MonoBehaviour
     [SerializeField] private float m_RadiusOuter = 0.3f;
     [SerializeField] private float m_RadiusInner = 0.05f;
 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+
     public Joystick Joystick => m_Joystick;
+
+    public Action onInputAttack_A;
+
+
     void Start()
     {
         m_HandInput.onPinch_L += OnPinch_L;
         m_HandInput.onRelease_L += OnRelease_L;
 
+        m_HandInput.onPinch_R += OnPinch_R;
+
         m_Joystick.Init(m_RadiusInner, m_RadiusOuter);
+    }
+
+    private void OnPinch_R(OVRHand hand)
+    {
+        onInputAttack_A?.Invoke();
     }
 
     private void OnDestroy()
