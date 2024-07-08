@@ -1,3 +1,5 @@
+using Oculus.Interaction;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -22,6 +24,26 @@ public class Struggler : MonoBehaviour
         joystick = FindObjectOfType<JoystickController>().Joystick;
         rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();
+
+        StrugglerRetriever.onRetrieveCalled += OnRetrieveCalled;
+    }
+
+    private void OnRetrieveCalled()
+    {
+
+        Vector3 teleportPos = PlayerLocal.Instance.m_PalmTr_L.position + Vector3.up * 0.15f;
+
+        Vector3 lookDir = PlayerLocal.Instance.m_MainCam.transform.position - teleportPos;
+        lookDir.y = 0f;
+
+        Quaternion teleportRot = Quaternion.LookRotation(lookDir, Vector3.up);
+
+        Teleport(teleportPos, teleportRot);
+    }
+
+    private void OnDestroy()
+    {
+        StrugglerRetriever.onRetrieveCalled -= OnRetrieveCalled;
     }
 
 
@@ -54,8 +76,11 @@ public class Struggler : MonoBehaviour
 
         animator.SetFloat(Param_MoveSpeed, lerpMag);
     }
-    void Update()
+
+    public void Teleport(Vector3 pos, Quaternion rot)
     {
-        
+        rb.position = pos;
+        rb.rotation = rot;
     }
+   
 }
