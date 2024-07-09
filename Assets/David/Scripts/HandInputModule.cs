@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class HandInputModule : MonoBehaviour
@@ -8,83 +9,119 @@ public class HandInputModule : MonoBehaviour
     public OVRHand m_OvrHand_L;
     public OVRHand m_OvrHand_R;
 
-    public Action<OVRHand> onPinch_L;
-    public Action<OVRHand> onRelease_L;
+    public Action<OVRHand, OVRHand.HandFinger> onPinch_L;
+    public Action<OVRHand, OVRHand.HandFinger> onRelease_L;
 
-    private bool _isPinching_L;
-    public bool IsPinching_L
-    {
-        get
-        {
-            return _isPinching_L;
-        }
-        private set
-        {
-            if(_isPinching_L != value)
-            {
-                _isPinching_L = value;
-                if(_isPinching_L)
-                {
-                    onPinch_L?.Invoke(m_OvrHand_L);
-                }
-                else
-                {
-                    onRelease_L?.Invoke(m_OvrHand_L);
-                }
-            }
-        }
-    }
+    public Action<OVRHand, OVRHand.HandFinger> onPinch_R;
+    public Action<OVRHand, OVRHand.HandFinger> onRelease_R;
 
+    private Dictionary<OVRHand.HandFinger, bool> isPinchingDic_L = new Dictionary<OVRHand.HandFinger, bool>();
+    private Dictionary<OVRHand.HandFinger, bool> isPinchingDic_R = new Dictionary<OVRHand.HandFinger, bool>();
 
-    public Action<OVRHand> onPinch_R;
-    public Action<OVRHand> onRelease_R;
+    private OVRHand.HandFinger[] fingers_L;
+    private OVRHand.HandFinger[] fingers_R;
 
-    private bool _isPinching_R;
-    public bool IsPinching_R
-    {
-        get
-        {
-            return _isPinching_R;
-        }
-        private set
-        {
-            if (_isPinching_R != value)
-            {
-                _isPinching_R = value;
-                if (_isPinching_R)
-                {
-                    onPinch_R?.Invoke(m_OvrHand_R);
-                }
-                else
-                {
-                    onRelease_R?.Invoke(m_OvrHand_R);
-                }
-            }
-        }
-    }
     void Start()
     {
+        isPinchingDic_L = new Dictionary<OVRHand.HandFinger, bool>()
+            {
+                { OVRHand.HandFinger.Thumb, false },
+                { OVRHand.HandFinger.Index, false },
+                { OVRHand.HandFinger.Middle, false },
+                { OVRHand.HandFinger.Ring, false },
+                { OVRHand.HandFinger.Pinky, false },
+            };
+
         
+
+        isPinchingDic_R = new Dictionary<OVRHand.HandFinger, bool>()
+            {
+                { OVRHand.HandFinger.Thumb, false },
+                { OVRHand.HandFinger.Index, false },
+                { OVRHand.HandFinger.Middle, false },
+                { OVRHand.HandFinger.Ring, false },
+                { OVRHand.HandFinger.Pinky, false },
+            };
+
+
+        fingers_L = isPinchingDic_L.Keys.ToArray();
+        fingers_R = isPinchingDic_R.Keys.ToArray();
+    }
+
+    public bool GetIsPinching_L(OVRHand.HandFinger _finger) => isPinchingDic_L[_finger];
+    public bool GetIsPinching_R(OVRHand.HandFinger _finger) => isPinchingDic_R[_finger];
+
+
+
+    private void SetIsPinchingState_L(OVRHand.HandFinger _finger, bool _isPinching)
+    {
+        var cur = isPinchingDic_L[_finger];
+
+        if (cur != _isPinching)
+        {
+            isPinchingDic_L[_finger] = _isPinching;
+
+            if (_isPinching)
+            {
+                onPinch_L?.Invoke(m_OvrHand_L, _finger);
+            }
+            else
+            {
+                onRelease_L?.Invoke(m_OvrHand_L, _finger);
+            }
+        }
+    }
+
+
+    private void SetIsPinchingState_R(OVRHand.HandFinger _finger, bool _isPinching)
+    {
+        var cur = isPinchingDic_R[_finger];
+
+        if(cur != _isPinching)
+        {
+            isPinchingDic_R[_finger] = _isPinching;
+
+            if (_isPinching)
+            {
+                onPinch_R?.Invoke(m_OvrHand_R, _finger);
+            }
+            else
+            {
+                onRelease_R?.Invoke(m_OvrHand_R, _finger);
+            }
+        }
     }
 
     void Update()
     {
         if(m_OvrHand_L.IsTracked)
         {
-            IsPinching_L = m_OvrHand_L.GetFingerIsPinching(OVRHand.HandFinger.Index);
+            foreach(var finger in fingers_L)
+            {
+                SetIsPinchingState_L(finger, m_OvrHand_L.GetFingerIsPinching(finger));
+            }            
         }
         else
         {
-            IsPinching_L = false;
+            foreach (var finger in fingers_L)
+            {
+                SetIsPinchingState_L(finger, false);
+            }
         }
 
         if (m_OvrHand_R.IsTracked)
         {
-            IsPinching_R = m_OvrHand_R.GetFingerIsPinching(OVRHand.HandFinger.Index);
+            foreach (var finger in fingers_R)
+            {
+                SetIsPinchingState_R(finger, m_OvrHand_R.GetFingerIsPinching(finger));
+            }
         }
         else
         {
-            IsPinching_R = false;
+            foreach (var finger in fingers_R)
+            {
+                SetIsPinchingState_R(finger, false);
+            }
         }
 
     }

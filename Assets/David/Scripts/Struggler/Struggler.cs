@@ -1,10 +1,9 @@
 using Oculus.Interaction;
-using Oculus.Interaction.PoseDetection.Debug.Editor.Generated;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
+
 
 public class Struggler : MonoBehaviour
 {
@@ -15,8 +14,10 @@ public class Struggler : MonoBehaviour
 
     private const string Param_MoveSpeed = "MoveSpeed";
     private const string Param_AttackA = "AttackA";
-    
-    
+    private const string Param_AttackB = "AttackB";
+    private const string Param_AttackC = "AttackC";
+    private const string Param_AttackD = "AttackD";
+
     //attack
     private float attackCoolTime = 1.0f;
     private bool isAttacking = false;
@@ -34,6 +35,7 @@ public class Struggler : MonoBehaviour
         joystick = joystickController.Joystick;
 
         joystickController.onInputAttack_A += OnInputAttack_A;
+        joystickController.onInputAttack_B += OnInputAttack_B;
 
 
         rb = GetComponent<Rigidbody>();
@@ -42,19 +44,26 @@ public class Struggler : MonoBehaviour
         StrugglerRetriever.onRetrieveCalled += OnRetrieveCalled;
     }
 
+    private void OnInputAttack_B()
+    {
+        if (isAttacking) return;
+
+        attackCor = StartCoroutine(AttackCor(Param_AttackB));
+    }
+
     private void OnInputAttack_A()
     {
         if (isAttacking) return;
 
-        attackCor = StartCoroutine(AttackCor());
+        attackCor = StartCoroutine(AttackCor(Param_AttackA));
     }
 
-    private IEnumerator AttackCor()
+    private IEnumerator AttackCor(string attackAnimParam)
     {
         isAttacking = true;
         
        SetUpperbodyLayerWeight(1.0f);
-        animator.SetTrigger(Param_AttackA);
+        animator.SetTrigger(attackAnimParam);
 
         float timePassed = 0f;
         while(timePassed < attackCoolTime) 

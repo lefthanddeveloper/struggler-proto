@@ -17,6 +17,9 @@ public class JoystickController : MonoBehaviour
     public Joystick Joystick => m_Joystick;
 
     public Action onInputAttack_A;
+    public Action onInputAttack_B;
+    public Action onInputAttack_C;
+    public Action onInputAttack_D;
 
 
     void Start()
@@ -29,9 +32,27 @@ public class JoystickController : MonoBehaviour
         m_Joystick.Init(m_RadiusInner, m_RadiusOuter);
     }
 
-    private void OnPinch_R(OVRHand hand)
+    private void OnPinch_R(OVRHand hand, OVRHand.HandFinger finger)
     {
-        onInputAttack_A?.Invoke();
+        switch (finger)
+        {
+            case OVRHand.HandFinger.Index:
+                onInputAttack_A?.Invoke();
+                break;
+
+
+            case OVRHand.HandFinger.Middle:
+                onInputAttack_B?.Invoke();
+                break;
+
+            case OVRHand.HandFinger.Ring:
+                onInputAttack_C?.Invoke();
+                break;
+
+            case OVRHand.HandFinger.Pinky:
+                onInputAttack_D?.Invoke();
+                break;
+        }
     }
 
     private void OnDestroy()
@@ -40,25 +61,31 @@ public class JoystickController : MonoBehaviour
         m_HandInput.onRelease_L -= OnRelease_L;
     }
 
-    private void OnPinch_L(OVRHand hand)
+    private void OnPinch_L(OVRHand hand, OVRHand.HandFinger finger)
     {
-        OVRSkeleton skeleton = hand.GetComponent<OVRSkeleton>();
-
-        if(skeleton.IsValidBone(OVRSkeleton.BoneId.Hand_IndexTip))
+        if(finger == OVRHand.HandFinger.Index)
         {
-            int indexFingerBoneID = (int)OVRSkeleton.BoneId.Hand_IndexTip;
-            
-            if(skeleton.Bones.Count > indexFingerBoneID)
+            OVRSkeleton skeleton = hand.GetComponent<OVRSkeleton>();
+
+            if(skeleton.IsValidBone(OVRSkeleton.BoneId.Hand_IndexTip))
             {
-                Transform indexTr = skeleton.Bones[indexFingerBoneID].Transform;
-                m_Joystick.Show(indexTr);
+                int indexFingerBoneID = (int)OVRSkeleton.BoneId.Hand_IndexTip;
+            
+                if(skeleton.Bones.Count > indexFingerBoneID)
+                {
+                    Transform indexTr = skeleton.Bones[indexFingerBoneID].Transform;
+                    m_Joystick.Show(indexTr);
+                }
             }
         }
     }
 
-    private void OnRelease_L(OVRHand hand)
+    private void OnRelease_L(OVRHand hand, OVRHand.HandFinger finger)
     {
-        m_Joystick.Hide();
+        if(finger == OVRHand.HandFinger.Index)
+        {
+            m_Joystick.Hide();
+        }
     }
 
     
