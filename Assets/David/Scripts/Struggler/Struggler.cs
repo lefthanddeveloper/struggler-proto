@@ -19,7 +19,6 @@ public class Struggler : MonoBehaviour
     private const string Param_AttackD = "AttackD";
 
     //attack
-    private float attackCoolTime = 1.0f;
     private bool isAttacking = false;
     private Coroutine attackCor = null;
     private Coroutine smoothLayerCor = null;
@@ -36,7 +35,8 @@ public class Struggler : MonoBehaviour
 
         joystickController.onInputAttack_A += OnInputAttack_A;
         joystickController.onInputAttack_B += OnInputAttack_B;
-
+        joystickController.onInputAttack_C += OnInputAttack_C;
+        joystickController.onInputAttack_D += OnInputAttack_D;
 
         rb = GetComponent<Rigidbody>();
         animator = GetComponentInChildren<Animator>();
@@ -44,11 +44,25 @@ public class Struggler : MonoBehaviour
         StrugglerRetriever.onRetrieveCalled += OnRetrieveCalled;
     }
 
+    private void OnInputAttack_D()
+    {
+        if (isAttacking) return;
+
+        attackCor = StartCoroutine(AttackCor(Param_AttackD, 2.0f));
+    }
+
+    private void OnInputAttack_C()
+    {
+        if (isAttacking) return;
+
+        attackCor = StartCoroutine(AttackCor(Param_AttackC));
+    }
+
     private void OnInputAttack_B()
     {
         if (isAttacking) return;
 
-        attackCor = StartCoroutine(AttackCor(Param_AttackB));
+        attackCor = StartCoroutine(AttackCor(Param_AttackB, 1.5f));
     }
 
     private void OnInputAttack_A()
@@ -58,7 +72,7 @@ public class Struggler : MonoBehaviour
         attackCor = StartCoroutine(AttackCor(Param_AttackA));
     }
 
-    private IEnumerator AttackCor(string attackAnimParam)
+    private IEnumerator AttackCor(string attackAnimParam, float animCoolTime = 1.0f)
     {
         isAttacking = true;
         
@@ -66,7 +80,8 @@ public class Struggler : MonoBehaviour
         animator.SetTrigger(attackAnimParam);
 
         float timePassed = 0f;
-        while(timePassed < attackCoolTime) 
+
+        while(timePassed < animCoolTime) 
         {
             timePassed += Time.deltaTime;
             yield return null;
@@ -78,7 +93,6 @@ public class Struggler : MonoBehaviour
 
     private void OnRetrieveCalled()
     {
-
         Vector3 teleportPos = PlayerLocal.Instance.m_PalmTr_L.position + Vector3.up * 0.15f;
 
         Vector3 lookDir = PlayerLocal.Instance.m_MainCam.transform.position - teleportPos;
