@@ -89,6 +89,7 @@ public class Struggler : MonoBehaviour
 
        SetUpperbodyLayerWeight(0f, true);
         isAttacking = false;
+        attackCor = null;
     }
 
     private void OnRetrieveCalled()
