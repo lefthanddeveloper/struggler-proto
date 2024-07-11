@@ -23,8 +23,13 @@ public class Struggler : MonoBehaviour
     private Coroutine attackCor = null;
     private Coroutine smoothLayerCor = null;
 
+    [Header("[ Movement ]")]
     [SerializeField] private float m_ForceMultiplier = 1.0f;
 
+    [SerializeField] private ParticleSystem m_TeleportFX;
+
+    [Header("[ Input FX ]")]
+    [SerializeField] private ParticleSystem m_InputFX;
     private float lerpMag = 0f;
     private Vector3 lerpVelocity = Vector3.zero;
 
@@ -47,6 +52,8 @@ public class Struggler : MonoBehaviour
     private void OnInputAttack_D()
     {
         if (isAttacking) return;
+        
+        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandPinkyTip);
 
         attackCor = StartCoroutine(AttackCor(Param_AttackD, 2.0f));
     }
@@ -55,12 +62,17 @@ public class Struggler : MonoBehaviour
     {
         if (isAttacking) return;
 
+
+        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandRingTip);
+
         attackCor = StartCoroutine(AttackCor(Param_AttackC));
     }
 
     private void OnInputAttack_B()
     {
         if (isAttacking) return;
+
+        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandMiddleTip);
 
         attackCor = StartCoroutine(AttackCor(Param_AttackB, 1.5f));
     }
@@ -69,7 +81,24 @@ public class Struggler : MonoBehaviour
     {
         if (isAttacking) return;
 
+        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandIndexTip);
+        
         attackCor = StartCoroutine(AttackCor(Param_AttackA));
+    }
+
+    private void PlayInputFX(Oculus.Interaction.Input.HandJointId jointID)
+    {
+        if (PlayerLocal.Instance.m_SyntheticHand_R.GetJointPose(jointID, out Pose pos))
+        {
+            Vector3 fxPos = pos.position;
+
+            if (m_InputFX.gameObject.activeSelf)
+            {
+                m_InputFX.gameObject.SetActive(false);
+            }
+            m_InputFX.transform.position = fxPos;
+            m_InputFX.gameObject.SetActive(true);
+        }
     }
 
     private IEnumerator AttackCor(string attackAnimParam, float animCoolTime = 1.0f)
@@ -144,6 +173,10 @@ public class Struggler : MonoBehaviour
     {
         rb.position = pos;
         rb.rotation = rot;
+
+        Vector3 fxPos = pos - Vector3.up * 0.125f;
+        m_TeleportFX.transform.position = fxPos;
+        m_TeleportFX.Play();
     }
 
     private void SetUpperbodyLayerWeight(float _weight, bool smooth = false)

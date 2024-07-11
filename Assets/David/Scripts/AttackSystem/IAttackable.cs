@@ -4,7 +4,8 @@ using UnityEngine;
 
 public struct AttackInfo
 {
-    Vector3 hitPoint;
+    public Vector3 hitPoint;
+    public float damage;
 }
 
 public interface IAttackable 
