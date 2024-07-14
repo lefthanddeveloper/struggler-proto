@@ -29,7 +29,9 @@ public class Struggler : MonoBehaviour
     [SerializeField] private ParticleSystem m_TeleportFX;
 
     [Header("[ Input FX ]")]
-    [SerializeField] private ParticleSystem m_InputFX;
+    //[SerializeField] private ParticleSystem m_InputFX;
+    [SerializeField] private InputParticle m_InputParticle;
+    
     private float lerpMag = 0f;
     private Vector3 lerpVelocity = Vector3.zero;
 
@@ -53,7 +55,7 @@ public class Struggler : MonoBehaviour
     {
         if (isAttacking) return;
         
-        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandPinkyTip);
+        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandPinkyTip, "D");
 
         attackCor = StartCoroutine(AttackCor(Param_AttackD, 2.0f));
     }
@@ -63,7 +65,7 @@ public class Struggler : MonoBehaviour
         if (isAttacking) return;
 
 
-        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandRingTip);
+        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandRingTip, "C");
 
         attackCor = StartCoroutine(AttackCor(Param_AttackC));
     }
@@ -72,7 +74,7 @@ public class Struggler : MonoBehaviour
     {
         if (isAttacking) return;
 
-        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandMiddleTip);
+        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandMiddleTip, "B");
 
         attackCor = StartCoroutine(AttackCor(Param_AttackB, 1.5f));
     }
@@ -81,23 +83,18 @@ public class Struggler : MonoBehaviour
     {
         if (isAttacking) return;
 
-        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandIndexTip);
+        PlayInputFX(Oculus.Interaction.Input.HandJointId.HandIndexTip, "A");
         
         attackCor = StartCoroutine(AttackCor(Param_AttackA));
     }
 
-    private void PlayInputFX(Oculus.Interaction.Input.HandJointId jointID)
+    private void PlayInputFX(Oculus.Interaction.Input.HandJointId jointID, string _inputKey)
     {
         if (PlayerLocal.Instance.m_SyntheticHand_R.GetJointPose(jointID, out Pose pos))
         {
             Vector3 fxPos = pos.position;
 
-            if (m_InputFX.gameObject.activeSelf)
-            {
-                m_InputFX.gameObject.SetActive(false);
-            }
-            m_InputFX.transform.position = fxPos;
-            m_InputFX.gameObject.SetActive(true);
+            m_InputParticle.ShowParticle(fxPos, _inputKey);
         }
     }
 
